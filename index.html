@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PokemonApi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+
+<body onload="buscarTipos(); buscarGeracao()">
+    <main class="container">
+        <h2>Pesquisar por Pokemon</h2>
+        <div class="row">
+            <div class="col-lg-6">
+                <input type="text" class="form-control" id="pokemon" placeholder="Nome do Pokemon">
+                <button class="btn btn-primary" onclick="buscarPokemon()">Buscar</button>
+                <button class="btn btn-secondary" id="botao">Exemplos</button>
+                <dialog id="modal">
+                    <h1>Pokemons para Testar</h1>
+                    <ul class="list-group">
+                        <li class="list-group-item">Pikachu</li>
+                        <li class="list-group-item">Ditto</li>
+                        <li class="list-group-item">Lapras</li>
+                        <li class="list-group-item">Absol</li>
+                        <li class="list-group-item">Gengar</li>
+                        <li class="list-group-item">Mew</li>
+                    </ul>
+                    <button id="button-close" class="btn btn-primary" data-modal="modal-1">Ok</button>
+                </dialog>
+                <div class="card">
+                    <img id="imagem" class="card-img-top" alt="Pesquise para aparecer" height="400">
+                    <div class="card-body">
+                        <h5 id="nome" class="card-title"></h5>
+                        <p id="info" class="card-text"></p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li id="tipo" class="list-group-item"></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <h2>Gerações</h2>
+                <nav>
+                    <ul class="list-group" id="ulGeracao">
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="col-lg-3">
+                <h2>Tipos</h2>
+                <nav>
+                    <ul class="list-group" id="ulTipos">
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <div class="row">
+            <h2>Pokemons por Tipo ou Geração</h2>
+        </div>
+        <div class="row" id="divCards">
+            <div class="col-lg-3">
+                <div class="card">
+                    <img src="..." class="card-img-top" alt="Selecione uma categoria">
+                    <div class="card-body">
+                        <h5 class="card-title"></h5>
+                        <p class="card-text"></p>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                        <li class="list-group-item"></li>
+                    </ul>
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+    <script>
+
+        async function buscarPokemon() {
+            let pokemon = document.getElementById(`pokemon`);
+            let url = `https://pokeapi.co/api/v2/pokemon/${pokemon.value}`;
+            let resposta = await fetch(url);
+            let dados = await resposta.json();
+            //console.log(dados);
+
+
+            document.getElementById('imagem').src = dados.sprites.other["official-artwork"].front_default;
+            document.getElementById('nome').innerText = `${dados.name} (ID: ${dados.id})`;
+            document.getElementById('info').innerText = `Altura: ${dados.height} | Peso: ${dados.weight}`;
+
+            let tipos = dados.types.map(t => t.type.name).join(', ');
+            document.getElementById('tipo').innerText = `Tipo: ${tipos}`;
+        }
+    </script>
+
+    <script>
+
+        async function buscarTipos() {
+            let url = `https://pokeapi.co/api/v2/type`;
+            let resposta = await fetch(url);
+            let dados = await resposta.json();
+
+            let tagPai = document.getElementById('ulTipos');
+            let filhos = '';
+
+            for (let item of dados.results) {
+                filhos += `
+                            <li class="list-group-item list-group-item-action"
+                            onclick="buscarPokemonsPorTipo('${item.name}', '${item.url}')">
+                            ${item.name}
+                            </li>`;
+            }
+            tagPai.innerHTML = filhos;
+            console.log(dados);
+        }
+
+        async function buscarPokemonsPorTipo(nomeTipo, urlTipo) { //Por algum motivo não encontra o unknown e stellar (Apesar de ter o tipo, acredito que não tenha
+            let resposta = await fetch(urlTipo);                  //                                                   pokemons desses dois tipos até onde eu vi).
+            let dados = await resposta.json();                    //Afinal também não achei o pokemon Mimikyu.
+
+            let tagPai = document.getElementById('divCards');
+            let filhos = '';
+
+            for (let i = 0; i < Math.min(16, dados.pokemon.length); i++) {
+                let poke = dados.pokemon[i].pokemon;
+
+                let resPoke = await fetch(poke.url);
+                let dadosPoke = await resPoke.json();
+
+                filhos += `
+                        <div class="col-lg-3">
+                            <div class="card text-center">
+                                <img src="${dadosPoke.sprites.other['official-artwork'].front_default}" 
+                                class="card-img-top" style="width:150px; height:150px; object-fit:contain;">
+                                <div class="card-body">
+                                    <h6 class="card-title">${dadosPoke.name}</h6>
+                                    <p class="card-text text-muted">Tipo: ${nomeTipo}</p>
+                                    <p class="card-text text-muted">Altura: ${dadosPoke.height} | Peso: ${dadosPoke.weight}</p> 
+                                </div>
+                            </div>
+                        </div>`;
+            }
+
+            tagPai.innerHTML = filhos;
+            console.log(dados);
+        }
+    </script>
+
+    <script>
+
+        async function buscarGeracao() {
+            let url = 'https://pokeapi.co/api/v2/generation';
+            let resposta = await fetch(url);
+            let dados = await resposta.json();
+
+            let tagPai = document.getElementById('ulGeracao');
+            let filhos = '';
+
+            for (let item of dados.results) {
+                filhos += `
+                            <li class="list-group-item list-group-item-action"
+                            onclick="buscarPokemonsPorGeracao('${item.name}')">
+                            ${item.name}
+                            </li>`;
+            }
+            tagPai.innerHTML = filhos;
+            console.log(dados);
+        }
+
+        async function buscarPokemonsPorGeracao(nomeGeracao) {
+
+            let geracoes = {
+                'generation-i': [1, 151], //id inicial
+                'generation-ii': [152, 251],
+                'generation-iii': [252, 386],
+                'generation-iv': [387, 493],
+                'generation-v': [494, 649],
+                'generation-vi': [650, 721],
+                'generation-vii': [722, 809],
+                'generation-viii': [810, 898] //id final
+            };
+
+            let [startId, endId] = geracoes[nomeGeracao];
+
+            let tagPai = document.getElementById('divCards');
+            let filhos = '';
+
+            for (let id = startId; id <= endId; id++) {
+                let url = `https://pokeapi.co/api/v2/pokemon/${id}`;
+                let resposta = await fetch(url);
+                let dados = await resposta.json();
+
+                let tipos = dados.types.map(t => t.type.name).join(', ');
+
+                filhos += `
+                            <div class="col-lg-3">
+                                <div class="card text-center">
+                                    <img src="${dados.sprites.other['official-artwork'].front_default}" 
+                                    class="card-img-top" style="width:150px; height:150px; object-fit:contain;">
+                                    <div class="card-body">
+                                       <h6 class="card-title">${dados.name}</h6>
+                                        <p class="card-text text-muted">Tipo: ${tipos}</p>
+                                        <p class="card-text text-muted">Altura: ${dados.height} | Peso: ${dados.weight}</p>
+                                    </div>
+                                </div>
+                            </div>`;
+            }
+
+            tagPai.innerHTML = filhos;
+        }
+
+    </script>
+
+    <script>
+
+        const button = document.querySelector("#botao");
+        const modal = document.querySelector("#modal");
+        const buttonClose = document.querySelector("#button-close");
+
+        button.onclick = function () {
+            modal.showModal();
+        }
+        buttonClose.onclick = function () {
+            modal.close();
+        }
+
+    </script>
+
+</body>
+
+</html>

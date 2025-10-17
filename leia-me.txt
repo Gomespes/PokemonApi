@@ -1,0 +1,8 @@
+Metodo 1: Pesquisar por nome do Pokemon
+https://pokeapi.co/api/v2/pokemon/(Nome Pokemon)
+
+Metodo 2: Listar por Tipo do Pokemon
+https://pokeapi.co/api/v2/type/{id or name}/
+
+Metodo 3: Listar por Geracao
+https://pokeapi.co/api/v2/generation/(numero da geracao)/
