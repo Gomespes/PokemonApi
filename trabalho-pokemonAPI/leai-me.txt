@@ -1,7 +1,0 @@
-1- Metodo lista por categoria (Elemento) - JSON: nature ou type (?)
-
-
-2- Metodo lista por Mega Evolução -  JSON: is_mega
-
-
-3- 
